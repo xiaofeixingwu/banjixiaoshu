@@ -1,0 +1,1943 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>全班共育小树林</title>
+  <style>
+    :root{
+      --bg1:#e6efe9;
+      --bg2:#f2f5f2;
+      --panel: rgba(255,255,255,.94);
+      --line: rgba(15,23,42,.08);
+      --shadow: 0 10px 24px rgba(15,23,42,.12);
+      --radius: 16px;
+
+      --primary:#2f6f52;
+      --primary2:#1f4f3a;
+      --primary-grad-1:#4c8b69;
+      --primary-grad-2:#2f6f52;
+      --primary-soft: rgba(47,111,82,.12);
+      --primary-soft-border: rgba(47,111,82,.22);
+      --warn:#f2b24d;
+      --warn-bg: #FF8A3D;
+      --good-bg: rgba(55,130,92,.92);
+      --danger:#d06565;
+      --bad-bg: rgba(208,101,101,.90);
+      --muted:#5f6b63;
+      --text:#0f172a;
+
+      --font-body:"HarmonyOS Sans SC","PingFang SC","Microsoft YaHei","Noto Sans SC",sans-serif;
+      --font-display:"STKaiti","Kaiti SC","Songti SC","Noto Serif SC",serif;
+      --font-mono:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+      --topbar-h: 104px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: var(--font-body);
+      line-height:1.55;
+      color:var(--text);
+      background: linear-gradient(180deg,var(--bg1) 0%, var(--bg2) 55%, #eef6ff 100%);
+    }
+    @keyframes riseIn{
+      from{opacity:0; transform: translateY(10px) scale(.985);}
+      to{opacity:1; transform: translateY(0) scale(1);}
+    }
+    @keyframes treeGrow{
+      0%{transform: scale(.86) translateY(6px); opacity:.6;}
+      60%{transform: scale(1.06) translateY(-2px); opacity:1;}
+      100%{transform: scale(1) translateY(0); opacity:1;}
+    }
+    @media (prefers-reduced-motion: reduce){
+      .stage,.side{animation:none}
+      .btn{transition:none}
+      .tree{animation:none !important}
+    }
+
+    /* Topbar */
+    .topbar{
+      position:sticky; top:0; z-index:60;
+      background: var(--panel);
+      border-bottom:1px solid var(--line);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 20px rgba(15,23,42,.06);
+    }
+    .topbar-inner{
+      max-width:100%;
+      margin:0 auto;
+      padding:12px 12px 10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .topbar-row{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .topbar-primary{
+      justify-content:space-between;
+    }
+    .status-chips{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .topbar-actions{
+      justify-content:center;
+      align-items:stretch;
+      flex-wrap:nowrap;
+      overflow-x:auto;
+      padding-bottom:4px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .topbar-actions .group{
+      flex:0 0 auto;
+    }
+    .group{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 8px;
+      border-radius:14px;
+      background: rgba(255,255,255,.74);
+      border:1px solid rgba(15,23,42,.10);
+      box-shadow: 0 6px 14px rgba(15,23,42,.06);
+    }
+    .group-title{
+      font-size:12px;
+      font-weight:900;
+      color:var(--muted);
+      padding:0 2px;
+      white-space:nowrap;
+    }
+    .group-actions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-family: var(--font-display);
+      font-weight:900;
+      font-size:16px;
+      color:var(--primary2);
+    }
+    .brand .dot{
+      width:12px;height:12px;border-radius:999px;
+      background: linear-gradient(135deg,var(--primary-grad-1),var(--primary-grad-2));
+      box-shadow:0 10px 20px rgba(47,111,82,.22);
+    }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      background: var(--primary-soft);
+      border:1px solid var(--primary-soft-border);
+      color:var(--primary2);
+      font-weight:900;
+      font-size:12.5px;
+      white-space:nowrap;
+    }
+    .chip.gray{
+      background: rgba(107,114,128,.08);
+      border:1px solid rgba(107,114,128,.18);
+      color:#111827;
+    }
+
+    .btn{
+      appearance:none;
+      border:1px solid rgba(15,23,42,.14);
+      border-radius:12px;
+      padding:9px 12px;
+      cursor:pointer;
+      font-weight:900;
+      background-color:#e5e7eb;
+      background-image: linear-gradient(180deg, rgba(255,255,255,.45), rgba(255,255,255,0) 65%);
+      color:#111827;
+      --icon-bg: rgba(15,23,42,.08);
+      --icon-fg: currentColor;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      user-select:none;
+      box-shadow:
+        0 1px 0 rgba(255,255,255,.6) inset,
+        0 2px 0 rgba(15,23,42,.18),
+        0 12px 20px rgba(15,23,42,.14);
+      transition: transform .06s ease, background .12s ease, opacity .12s ease, box-shadow .12s ease;
+      white-space:nowrap;
+    }
+    .btn[data-icon]::before{
+      content: attr(data-icon);
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      width:18px;
+      height:18px;
+      font-size:12px;
+      line-height:1;
+      border-radius:999px;
+      background: var(--icon-bg);
+      color: var(--icon-fg);
+      box-shadow: 0 1px 0 rgba(255,255,255,.5) inset;
+    }
+    .btn.small[data-icon]::before{font-size:12px}
+    .btn.tiny[data-icon]::before{font-size:11px}
+    .btn:active{
+      transform:translateY(1px);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,.4) inset,
+        0 1px 0 rgba(15,23,42,.2),
+        0 6px 12px rgba(15,23,42,.14);
+    }
+    .btn:hover{opacity:.98}
+    .btn.primary{background-color:var(--primary); color:#fff; --icon-bg: rgba(255,255,255,.28)}
+    .btn.primary:hover{background-color:#2a634a}
+    .btn.warn{background-color:var(--warn); color:#111827; --icon-bg: rgba(255,255,255,.3)}
+    .btn.stop{background-color:#FF8A3D; color:#111827; --icon-bg: rgba(255,255,255,.3)}
+    .btn.stop:hover{background-color:#F07D34}
+    .btn.danger{background-color:var(--danger); color:#fff; --icon-bg: rgba(255,255,255,.22)}
+    .btn.ghost{
+      background:transparent;
+      border:1px solid rgba(15,23,42,.18);
+      box-shadow:
+        0 1px 0 rgba(255,255,255,.5) inset,
+        0 2px 6px rgba(15,23,42,.08);
+    }
+    .btn.small{padding:7px 10px; border-radius:11px}
+    .btn.tiny{padding:6px 9px; border-radius:10px; font-weight:950}
+    .sep{width:1px;height:34px;background:var(--line); margin:0 2px}
+    .topbar .btn{
+      padding:8px 14px;
+      border-radius:999px;
+      font-size:12.5px;
+    }
+
+    /* Layout */
+    .wrap{
+      max-width:1280px;
+      margin:16px auto 20px;
+      padding:0 12px;
+      display:grid;
+      grid-template-columns: 1.55fr 1fr;
+      gap:16px;
+    }
+    @media (max-width: 980px){
+      .wrap{grid-template-columns:1fr}
+      .topbar-primary{align-items:flex-start}
+      .topbar-actions{
+        flex-direction:row;
+        align-items:stretch;
+        flex-wrap:wrap;
+        overflow-x:visible;
+        padding-bottom:0;
+      }
+      .topbar-actions .group{flex:1 1 260px}
+    }
+    @media (max-width: 640px){
+      .topbar-actions .group{flex:1 1 100%}
+    }
+
+    /* Stage */
+    .stage{
+      border-radius: var(--radius);
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.78);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+      min-height: 620px;
+      animation: riseIn .45s ease both;
+    }
+    .stage-header{
+      padding:14px 12px 10px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      border-bottom:1px solid rgba(15,23,42,.06);
+      background: rgba(255,255,255,.78);
+    }
+    .title{
+      display:flex; align-items:center; gap:10px;
+      font-size:16px;
+      font-family: var(--font-display);
+      font-weight:900;
+      color:var(--primary2);
+    }
+    .title .leaf{
+      width:18px;height:18px;border-radius:6px;
+      background: linear-gradient(135deg,var(--primary-grad-1),var(--primary-grad-2));
+      transform: rotate(12deg);
+      box-shadow:0 10px 20px rgba(47,111,82,.22);
+    }
+    .sub{
+      color:var(--muted);
+      font-weight:800;
+      font-size:12.2px;
+      line-height:1.35;
+    }
+
+    .banner{
+      position:absolute;
+      top:72px; left:50%;
+      transform: translateX(-50%);
+      z-index:10;
+      max-width: calc(100% - 24px);
+      padding:12px 18px;
+      border-radius:999px;
+      background: var(--warn-bg);
+      color:#fff;
+      font-weight:1000;
+      font-size:14px;
+      box-shadow:0 16px 32px rgba(195,154,75,.25);
+      border:1px solid rgba(15,23,42,.12);
+      text-align:center;
+      user-select:none;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+    }
+    .banner-text{
+      flex:1;
+      text-align:center;
+    }
+    .banner-action{
+      border:1px solid rgba(15,23,42,.18);
+      background: rgba(255,255,255,.75);
+      color:#0f172a;
+      border-radius:999px;
+      padding:6px 10px;
+      font-size:12.5px;
+      font-weight:900;
+      display:none;
+      align-items:center;
+      gap:6px;
+      cursor:pointer;
+      box-shadow:0 6px 14px rgba(15,23,42,.12);
+    }
+    .banner-action::before{
+      content: attr(data-icon);
+      font-size:12px;
+      line-height:1;
+      opacity:.9;
+    }
+    .banner-action:hover{opacity:.92}
+    .banner-action:active{transform:translateY(1px)}
+    .banner.good{background: var(--good-bg); color:#fff}
+    .banner.bad{background: var(--bad-bg); color:#1f2937}
+
+    .forest{
+      padding:88px 12px 12px;
+      height: 490px;
+      position:relative;
+      background:
+        radial-gradient(120% 60% at 12% 100%, rgba(255,255,255,.55), transparent 60%),
+        radial-gradient(120% 60% at 88% 110%, rgba(15,23,42,.06), transparent 60%),
+        #D7F0E3;
+      border-top:1px solid rgba(15,23,42,.06);
+      border-bottom:1px solid rgba(15,23,42,.06);
+    }
+    .forest-grid{
+      height:100%;
+      display:grid;
+      gap:10px 12px;
+      align-content:start;
+    }
+    .forest-grid.seedling{
+      grid-template-columns: 1fr;
+      justify-items:center;
+      align-content:center;
+    }
+    .forest-grid.seedling .tree{
+      width: min(200px, 42vw);
+      opacity:.9;
+    }
+    .tree{
+      width:100%;
+      aspect-ratio: 1/1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      filter: drop-shadow(0 6px 10px rgba(15,23,42,.15));
+      opacity:.98;
+      transition: transform .15s ease, opacity .15s ease;
+    }
+    .tree.grow{
+      animation: treeGrow .6s ease-out;
+    }
+    .tree svg{width:100%;height:100%}
+
+    .stage-footer{
+      padding:10px 12px 12px;
+      background: rgba(255,255,255,.78);
+      border-top:1px solid rgba(15,23,42,.06);
+      display:flex;
+      gap:12px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .pill{
+      background: rgba(255,255,255,.94);
+      border:1px solid rgba(15,23,42,.10);
+      border-radius:999px;
+      padding:12px 16px;
+      display:flex;
+      gap:0;
+      align-items:center;
+      box-shadow:0 12px 22px rgba(15,23,42,.10);
+      flex-wrap:wrap;
+      flex: 1 1 520px;
+      justify-content:space-between;
+    }
+    .metric{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:1000;
+      padding:0 12px;
+    }
+    .metric:not(:last-child){
+      border-right:1px solid rgba(15,23,42,.08);
+    }
+    .metric span{color:var(--muted);font-weight:900}
+    .metric b,.kv b,#levelNum,#prosperity,#todayGain,#listenTime,#treeCount{
+      font-variant-numeric: tabular-nums;
+    }
+
+    .bar{
+      width:220px;height:10px;border-radius:999px;
+      background:#e5e7eb;
+      border:1px solid rgba(15,23,42,.12);
+      overflow:hidden;
+    }
+    .bar > i{
+      display:block;height:100%;width:0%;
+      background: linear-gradient(90deg,#7aa0b8,#69aa8b,#c39a4b,#d06565);
+      border-radius:999px;
+      transition: width .08s linear;
+    }
+    .statusTag{
+      font-weight:1000;
+      color:#111827;
+      padding:2px 8px;
+      border-radius:999px;
+      background: rgba(15,23,42,.06);
+      border:1px solid rgba(15,23,42,.08);
+    }
+
+    /* Side panel */
+    .side{
+      border-radius: var(--radius);
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.80);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      min-height: 620px;
+      display:flex;
+      flex-direction:column;
+      animation: riseIn .45s ease .06s both;
+    }
+    .side-header{
+      padding:12px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+    .side-header h3{
+      margin:0;
+      font-size:14px;
+      font-family: var(--font-display);
+      font-weight:900;
+      color:var(--primary2);
+      line-height:1.3;
+    }
+    .side-body{
+      padding:12px;
+      overflow:auto;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,255,255,.92));
+      border:1px solid rgba(15,23,42,.08);
+      border-radius:14px;
+      padding:12px;
+      box-shadow:0 10px 22px rgba(15,23,42,.06);
+      margin:0;
+    }
+    .card .sub b{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 8px;
+      border-radius:10px;
+      background: var(--primary-soft);
+      color:var(--primary2);
+    }
+    .section-title{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:900;
+      font-size:14px;
+      color:#0f172a;
+      padding:0;
+      margin-bottom:8px;
+    }
+    .section-title::before{
+      content:"";
+      width:6px;
+      height:16px;
+      border-radius:999px;
+      background: var(--primary);
+      box-shadow:0 6px 12px rgba(47,111,82,.22);
+    }
+    .section-divider{
+      height:1px;
+      background: rgba(15,23,42,.10);
+      margin:14px 0;
+    }
+    .kv{
+      display:grid;
+      grid-template-columns: 120px 1fr;
+      gap:10px;
+      align-items:center;
+      margin:8px 0;
+      font-weight:900;
+      font-size:13px;
+    }
+    .kv .k{color:var(--muted);font-weight:900}
+    .hint{
+      color:var(--muted);
+      font-weight:850;
+      font-size:12px;
+      line-height:1.5;
+    }
+    input[type="range"]{width:100%}
+    input[type="number"], input[type="text"], select{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid rgba(15,23,42,.18);
+      outline:none;
+      font-weight:950;
+      background:#fff;
+    }
+
+    /* Modal */
+    .backdrop{
+      position:fixed; inset:0; z-index:90;
+      background: rgba(0,0,0,.45);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+    }
+    .modal{
+      width:min(900px, 96vw);
+      background:#fff;
+      border-radius:16px;
+      border:1px solid rgba(15,23,42,.12);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .modal-header{
+      padding:12px 14px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom:1px solid rgba(15,23,42,.08);
+      background: rgba(255,255,255,.92);
+      gap:10px;
+    }
+    .modal-header h4{margin:0;font-weight:1000}
+    .modal-body{padding:14px}
+    .modal-footer{
+      padding:12px 14px;
+      border-top:1px solid rgba(15,23,42,.08);
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .two{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 860px){
+      .two{grid-template-columns:1fr}
+    }
+    .log{
+      max-height:200px;
+      overflow:auto;
+      background:#0b1220;
+      color:#dbeafe;
+      border-radius:12px;
+      padding:12px;
+      border:1px solid rgba(255,255,255,.12);
+      font-family: var(--font-mono);
+      font-size:12px;
+      line-height:1.55;
+      white-space:pre-wrap;
+    }
+
+    /* Projection mode */
+    body.panel-collapsed .wrap{grid-template-columns:1fr}
+    body.panel-collapsed .side{display:none}
+    body.projection .wrap{grid-template-columns:1fr}
+    body.projection .side{display:none}
+    body.projection .forest{height: calc(100vh - var(--topbar-h) - 78px - 64px);}
+    body.projection .stage{min-height: calc(100vh - var(--topbar-h));}
+    body.projection .banner{font-size:20px;padding:12px 18px}
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-row topbar-primary">
+        <div class="brand"><span class="dot"></span> 全班共育小树林</div>
+        <div class="status-chips">
+          <div class="chip gray" id="chipDate">今日：--</div>
+          <div class="chip" id="chipMode">模式：朗读</div>
+          <div class="chip gray" id="chipMic">麦克风：未开启</div>
+        </div>
+      </div>
+
+      <div class="topbar-row topbar-actions">
+        <div class="group">
+          <div class="group-title">模式</div>
+          <div class="group-actions">
+            <button class="btn warn" id="btnModeToggle" data-icon="⇄">朗读模式</button>
+          </div>
+        </div>
+        <div class="group">
+          <div class="group-title">监听</div>
+          <div class="group-actions">
+            <button class="btn primary" id="btnStartStop" data-icon="▶">开始监听</button>
+            <button class="btn" id="btnTest" data-icon="◷">模拟测试</button>
+            <button class="btn primary" id="btnFeed" data-icon="+">投放养料</button>
+          </div>
+        </div>
+        <div class="group">
+          <div class="group-title">管理</div>
+          <div class="group-actions">
+            <button class="btn" id="btnSens" data-icon="≈">灵敏度</button>
+            <button class="btn" id="btnSettings" data-icon="⚙">设置</button>
+            <button class="btn" id="btnData" data-icon="▦">数据管理</button>
+            <button class="btn ghost" id="btnPanelToggle" data-icon="»">展开控场面板</button>
+          </div>
+        </div>
+        <div class="group">
+          <div class="group-title">展示</div>
+          <div class="group-actions">
+            <button class="btn ghost" id="btnProjection" data-icon="▣">投屏</button>
+            <button class="btn ghost" id="btnFullscreen" data-icon="⤢">全屏</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- Stage -->
+    <div class="stage">
+      <div class="stage-header">
+        <div>
+          <div class="title" id="stageTitle"><span class="leaf"></span> 班级共育小树林</div>
+          <div class="sub" id="subHint">
+            说明：朗读模式鼓励更大声；自习模式鼓励更安静。
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="sub">当前阈值：<b id="thresholdText">--</b></div>
+          <div class="sub">灵敏度：<b id="sensText">--</b>｜平滑：<b id="smoothText">--</b></div>
+        </div>
+      </div>
+
+      <div class="banner" id="banner">
+        <span class="banner-text" id="bannerText">点击「开始监听」，让森林跟随课堂状态成长</span>
+        <button class="banner-action" id="bannerAction" type="button" data-icon="↩">撤销</button>
+      </div>
+
+      <div class="forest">
+        <div class="forest-grid" id="forestGrid"></div>
+      </div>
+
+      <div class="stage-footer">
+        <div class="pill">
+          <div class="metric">森林繁荣度：<b id="prosperity">0</b></div>
+          <div class="metric"><span>树木：</span><b id="treeCount">50</b> 棵</div>
+          <div class="metric">
+            <span>活力：</span>
+            <div class="bar"><i id="levelFill"></i></div>
+            <b id="levelNum">0</b>%
+            <span class="statusTag" id="statusTag">—</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <span class="sub">今日增长：<b id="todayGain">0</b>｜监听：<b id="listenTime">0</b> 分钟</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Side -->
+    <div class="side">
+      <div class="side-header">
+        <div>
+          <h3>课堂控场面板</h3>
+          <div class="hint">
+            用于查看课堂状态，并快速调整灵敏度与增长节奏。
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end">
+          <button class="btn small" id="btnSessionReset" data-icon="↺">重置本节课</button>
+          <button class="btn small danger" id="btnAllReset" data-icon="⟲">重置森林累计</button>
+        </div>
+      </div>
+      <div class="side-body">
+        <div class="card">
+          <div class="kv"><div class="k">当前模式</div><div><b id="pMode">朗读</b></div></div>
+          <div class="kv"><div class="k">状态</div><div><b id="pState">未监听</b></div></div>
+          <div class="kv"><div class="k">提示语</div><div><b id="pMsg">—</b></div></div>
+          <div class="kv"><div class="k">投放养料次数</div><div><b id="pFeed">0</b></div></div>
+          <div class="hint">“投放养料”用于额外奖励森林成长。</div>
+        </div>
+
+        <div class="card">
+          <div class="sub" style="margin-bottom:8px"><b>快速调参（常用）</b></div>
+          <div class="kv">
+            <div class="k">灵敏度</div>
+            <div>
+              <input id="sensRange" type="range" min="0.5" max="2.5" step="0.05"/>
+              <div class="hint">教室很安静→低一些；环境嘈杂→高一些。</div>
+            </div>
+          </div>
+          <div class="kv">
+            <div class="k">增长速率</div>
+            <div>
+              <input id="growthRange" type="range" min="0.2" max="3" step="0.05"/>
+              <div class="hint">越大=越容易成长（更“爽”）。</div>
+            </div>
+          </div>
+          <div class="kv">
+            <div class="k">提示强度</div>
+            <div>
+              <select id="msgLevel">
+                <option value="soft">温和</option>
+                <option value="normal" selected>正常</option>
+                <option value="strict">严格</option>
+              </select>
+              <div class="hint">严格：更频繁提示；温和：减少打断。</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="sub" style="margin-bottom:8px"><b>日志（用于排查问题）</b></div>
+          <div class="log" id="logBox"></div>
+        </div>
+
+        <div class="hint">
+          麦克风无法启用时，请在浏览器中允许麦克风访问。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Test -->
+  <div class="backdrop" id="modalTest">
+    <div class="modal">
+      <div class="modal-header">
+        <h4>模拟测试（校准教室环境）</h4>
+        <button class="btn" id="btnCloseTest" data-icon="✕">关闭</button>
+      </div>
+      <div class="modal-body">
+        <div class="two">
+          <div class="card" style="margin:0">
+            <div class="sub"><b>实时音量</b></div>
+            <div class="kv">
+              <div class="k">音量</div>
+              <div>
+                <div class="bar" style="width:100%"><i id="testFill"></i></div>
+                <div class="hint">这里是 0～100 的“相对强度”，不等同于分贝。</div>
+              </div>
+            </div>
+            <div class="kv"><div class="k">当前值</div><div><b id="testNum">0</b></div></div>
+            <div class="kv"><div class="k">背景噪声（平均）</div><div><b id="baseNum">—</b></div></div>
+            <div class="kv"><div class="k">建议阈值</div><div><b id="suggestText">—</b></div></div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+              <button class="btn warn" id="btnCollectBase" data-icon="◉">采集背景噪声（10秒）</button>
+              <button class="btn primary" id="btnApplySuggest" data-icon="✓">应用建议阈值</button>
+            </div>
+            <div class="hint" style="margin-top:8px">
+              建议操作：教室保持“当前真实状态”采集（自习就安静采集；朗读就读一段采集）。
+            </div>
+          </div>
+
+          <div class="card" style="margin:0">
+            <div class="sub"><b>解释（老师能理解的版本）</b></div>
+            <div class="hint">
+              <p style="margin:8px 0">
+                自习模式：音量 ≤ <b>安静上限</b> 才算达标；朗读模式：在 <b>朗读音量范围（最低～最高）</b> 才算达标。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" id="btnCloseTest2" data-icon="✕">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Sensitivity -->
+  <div class="backdrop" id="modalSens">
+    <div class="modal">
+      <div class="modal-header">
+        <h4>灵敏度（影响“同样声音下反馈强度”）</h4>
+        <button class="btn" onclick="UI.close('modalSens')" data-icon="✕">关闭</button>
+      </div>
+      <div class="modal-body">
+        <div class="card" style="margin:0">
+          <div class="kv">
+            <div class="k">灵敏度</div>
+            <div>
+              <input id="sensModalRange" type="range" min="0.5" max="2.5" step="0.05"/>
+              <div class="hint">当前：<b id="sensModalVal">—</b></div>
+            </div>
+          </div>
+          <div class="hint">
+            经验：安静教室建议 0.9～1.2；嘈杂教室建议 1.4～2.0。
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn primary" onclick="UI.close('modalSens')" data-icon="✓">完成</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Settings -->
+  <div class="backdrop" id="modalSettings">
+    <div class="modal">
+      <div class="modal-header">
+        <h4>设置（树木与算法参数）</h4>
+        <button class="btn" onclick="UI.close('modalSettings')" data-icon="✕">关闭</button>
+      </div>
+      <div class="modal-body">
+        <div class="two">
+          <div class="card" style="margin:0">
+            <div class="sub"><b>显示设置</b></div>
+            <div class="kv">
+              <div class="k">树木上限</div>
+              <div>
+                <input id="setTreeCount" type="number" min="20" max="200" step="1"/>
+                <div class="hint">建议 40～80：树木会随繁荣度逐步增长，直到上限。</div>
+              </div>
+            </div>
+            <div class="kv">
+              <div class="k">每行树数（列数）</div>
+              <div>
+                <input id="setCols" type="number" min="6" max="16" step="1"/>
+              </div>
+            </div>
+            <div class="kv">
+              <div class="k">允许过大声提醒</div>
+              <div>
+                <select id="setTooLoud">
+                  <option value="on">开启</option>
+                  <option value="off">关闭</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin:0">
+            <div class="sub"><b>算法设置</b></div>
+            <div class="kv">
+              <div class="k">平滑程度</div>
+              <div><input id="setSmooth" type="range" min="0.1" max="0.95" step="0.01"/></div>
+            </div>
+            <div class="kv">
+              <div class="k">自习安静上限</div>
+              <div><input id="setQuietMax" type="number" min="0" max="100" step="1"/></div>
+            </div>
+            <div class="kv">
+              <div class="k">朗读音量范围（最低/最高）</div>
+              <div>
+                <div style="display:flex; gap:8px">
+                  <input id="setReadMin" type="number" min="0" max="100" step="1"/>
+                  <input id="setReadMax" type="number" min="0" max="100" step="1"/>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hint" style="margin-top:10px">
+          建议：先用“模拟测试”自动出建议阈值，再微调。
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn" onclick="UI.close('modalSettings')" data-icon="↩">取消</button>
+        <button class="btn primary" id="btnSaveSettings" data-icon="✓">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Data -->
+  <div class="backdrop" id="modalData">
+    <div class="modal">
+      <div class="modal-header">
+        <h4>数据管理（本地存储 / 备份迁移）</h4>
+        <button class="btn" onclick="UI.close('modalData')" data-icon="✕">关闭</button>
+      </div>
+      <div class="modal-body">
+        <div class="two">
+          <div class="card" style="margin:0">
+            <div class="sub"><b>统计</b></div>
+            <div class="kv"><div class="k">总繁荣度</div><div><b id="dPros">0</b></div></div>
+            <div class="kv"><div class="k">今日增长</div><div><b id="dGain">0</b></div></div>
+            <div class="kv"><div class="k">总监听时长</div><div><b id="dTime">0</b> 分钟</div></div>
+            <div class="kv"><div class="k">朗读时长</div><div><b id="dRead">0</b> 分钟</div></div>
+            <div class="kv"><div class="k">自习时长</div><div><b id="dQuiet">0</b> 分钟</div></div>
+            <div class="kv"><div class="k">投放养料次数</div><div><b id="dFeed">0</b></div></div>
+            <div class="hint">数据只保存在本机浏览器里，不上传网络。</div>
+          </div>
+
+          <div class="card" style="margin:0">
+            <div class="section-title">备份与恢复</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+              <button class="btn primary" id="btnExport" data-icon="⇩">导出备份</button>
+              <button class="btn warn" id="btnImport" data-icon="⇧">恢复备份</button>
+              <input type="file" id="importFile" accept="application/json"/>
+            </div>
+            <div class="hint" style="margin-top:6px">导出为备份文件，用于换电脑或误删恢复。</div>
+
+            <div class="section-divider" aria-hidden="true"></div>
+            <div class="section-title">危险操作</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:8px">
+              <button class="btn" id="btnResetSession2" data-icon="↺">重置本节课</button>
+              <button class="btn danger" id="btnResetAll2" data-icon="⟲">重置森林累计</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+/** =========================================================
+ *  全班共育小树林（课堂声音驱动）
+ * ========================================================= */
+
+const STORE_KEY = "class_forest_group_v2_students";
+
+const DEFAULT_STATE = {
+  today: null,
+
+  // display
+  treeCount: 50,
+  cols: 12,
+
+  // modes
+  mode: "read", // read | quiet
+
+  // audio params
+  sensitivity: 1.2,     // 0.5~2.5
+  smooth: 0.82,         // EMA factor
+  quietMax: 22,         // 0-100
+  readMin: 38,          // 0-100
+  readMax: 70,          // 0-100
+  tooLoudHint: true,
+
+  // growth
+  growthRate: 1.25,     // prosperity per second at "good"
+  messageLevel: "normal", // soft|normal|strict
+
+  // stats
+  prosperityTotal: 0,
+  prosperityToday: 0,
+  feedCount: 0,
+  listenSecondsTotal: 0,
+  listenSecondsRead: 0,
+  listenSecondsQuiet: 0,
+
+  // session
+  sessionGain: 0,
+  sessionSeconds: 0,
+  hasListened: false,
+  panelCollapsed: true,
+
+  // log
+  logs: []
+};
+
+const S = {
+  state: loadState(),
+  audio: {
+    ctx: null,
+    stream: null,
+    analyser: null,
+    data: null,
+    running: false,
+    level: 0,
+    rawLevel: 0,
+    tickTimer: null,
+    lastTick: 0,
+    permission: "unknown"
+  },
+  test: {
+    collecting: false,
+    baseSamples: []
+  }
+};
+
+const UI = {
+  actionToken: null,
+  open(id){ document.getElementById(id).style.display="flex"; },
+  close(id){ document.getElementById(id).style.display="none"; },
+  setBanner(text, type="warn", action=null){
+    const el = document.getElementById("banner");
+    const textEl = document.getElementById("bannerText") || el;
+    textEl.textContent = text;
+    el.classList.remove("good","bad");
+    if(type==="good") el.classList.add("good");
+    if(type==="bad") el.classList.add("bad");
+    this.setBannerAction(action);
+    if(!action && typeof Undo !== "undefined" && Undo.token){
+      Undo.clear();
+    }
+  },
+  setBannerAction(action){
+    const btn = document.getElementById("bannerAction");
+    if(!btn) return;
+    if(action && action.label && action.onClick){
+      btn.textContent = action.label;
+      btn.style.display = "inline-flex";
+      btn.onclick = action.onClick;
+      this.actionToken = action.token || null;
+    }else{
+      btn.style.display = "none";
+      btn.onclick = null;
+      this.actionToken = null;
+    }
+  },
+  clearBannerAction(token){
+    if(token && this.actionToken !== token) return;
+    this.setBannerAction(null);
+  }
+};
+
+function nowDate(){
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
+  return `${yyyy}-${mm}-${dd}`;
+}
+function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
+function round0(n){ return Math.round(n); }
+function round1(n){ return Math.round(n*10)/10; }
+function uid(){ return Math.random().toString(16).slice(2) + Date.now().toString(16); }
+let lastTreeCount = 0;
+
+function triggerGrow(el, delay=0){
+  if(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const run = ()=>{
+    el.classList.remove("grow");
+    void el.offsetWidth;
+    el.classList.add("grow");
+    if(el._growTimer) clearTimeout(el._growTimer);
+    el._growTimer = setTimeout(()=>{ el.classList.remove("grow"); }, 650);
+  };
+  if(delay > 0) setTimeout(run, delay);
+  else run();
+}
+
+const Undo = {
+  token: null,
+  timer: null,
+  offer({message, type="warn", duration=9000, onUndo}){
+    this.clear();
+    const token = uid();
+    this.token = token;
+    UI.setBanner(message, type, {
+      label: "撤销",
+      token,
+      onClick: ()=>{
+        if(this.token !== token) return;
+        this.clear();
+        onUndo();
+      }
+    });
+    this.timer = setTimeout(()=>{
+      if(this.token === token){
+        UI.clearBannerAction(token);
+        this.token = null;
+      }
+    }, duration);
+  },
+  clear(){
+    if(this.timer){
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
+    if(this.token){
+      UI.clearBannerAction(this.token);
+      this.token = null;
+    }
+  }
+};
+
+function logLine(msg){
+  const ts = new Date().toLocaleString();
+  S.state.logs.unshift(`[${ts}] ${msg}`);
+  S.state.logs = S.state.logs.slice(0, 260);
+  renderLog();
+  saveState();
+}
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(!raw) return migrate(structuredClone(DEFAULT_STATE));
+    const obj = JSON.parse(raw);
+    return migrate(obj);
+  }catch{
+    return migrate(structuredClone(DEFAULT_STATE));
+  }
+}
+function migrate(obj){
+  const base = structuredClone(DEFAULT_STATE);
+  const st = { ...base, ...obj };
+  st.treeCount = clamp(Number(st.treeCount||50), 20, 200);
+  st.cols = clamp(Number(st.cols||12), 6, 16);
+  st.sensitivity = clamp(Number(st.sensitivity||1.2), 0.5, 2.5);
+  st.smooth = clamp(Number(st.smooth||0.82), 0.1, 0.95);
+  st.quietMax = clamp(Number(st.quietMax||22), 0, 100);
+  st.readMin = clamp(Number(st.readMin||38), 0, 100);
+  st.readMax = clamp(Number(st.readMax||70), 0, 100);
+  if(st.readMax < st.readMin) st.readMax = st.readMin + 5;
+  st.growthRate = clamp(Number(st.growthRate||1.25), 0.2, 3);
+  st.tooLoudHint = Boolean(st.tooLoudHint);
+  st.messageLevel = st.messageLevel || "normal";
+  st.hasListened = Boolean(st.hasListened);
+  st.panelCollapsed = Boolean(st.panelCollapsed);
+  delete st.students;
+  delete st.studentsAuto;
+  delete st.studentFactor;
+  delete st.feedToStudents;
+
+  if(!Array.isArray(st.logs)) st.logs = [];
+
+  return st;
+}
+function saveState(){
+  localStorage.setItem(STORE_KEY, JSON.stringify(S.state));
+}
+
+function ensureToday(){
+  const t = nowDate();
+  if(S.state.today !== t){
+    S.state.today = t;
+    S.state.prosperityToday = 0;
+    S.state.sessionGain = 0;
+    S.state.sessionSeconds = 0;
+    logLine(`NEW DAY ${t}：今日增长清零（累计繁荣度保留）`);
+    saveState();
+  }
+  document.getElementById("chipDate").textContent = `今日：${S.state.today}`;
+}
+
+function modeName(){ return S.state.mode === "read" ? "朗读" : "自习"; }
+function modeTitle(){
+  return S.state.mode === "read" ? "朗读小树林" : "自习小树林";
+}
+function modeHint(){
+  if(S.state.mode === "read"){
+    return "朗读模式：鼓励更大声，音量在达标区间内小树成长。";
+  }
+  return "自习模式：鼓励更安静，音量低于安静上限时小树成长。";
+}
+function shouldPromptMic(){
+  return !S.audio.running && (S.audio.permission === "denied" || S.audio.permission === "prompt");
+}
+function updateSubHint(){
+  const base = modeHint();
+  const extra = shouldPromptMic() ? "提示：请允许使用麦克风。" : "";
+  const text = extra ? `${base} ${extra}` : base;
+  const el = document.getElementById("subHint");
+  if(el) el.textContent = text;
+}
+async function initMicPermission(){
+  if(!navigator.permissions?.query){
+    updateSubHint();
+    return;
+  }
+  try{
+    const status = await navigator.permissions.query({name:"microphone"});
+    S.audio.permission = status.state;
+    updateSubHint();
+    status.onchange = ()=>{
+      S.audio.permission = status.state;
+      updateSubHint();
+    };
+  }catch{
+    updateSubHint();
+  }
+}
+
+function thresholdText(){
+  if(S.state.mode === "read"){
+    return `朗读音量范围 ${S.state.readMin} ～ ${S.state.readMax}`;
+  }
+  return `安静上限 ≤ ${S.state.quietMax}`;
+}
+
+function vitalityTag(level){
+  if(level < 18) return "低迷";
+  if(level < 40) return "一般";
+  if(level < 65) return "不错";
+  return "充满活力！";
+}
+
+/* ---------------- Forest Rendering ---------------- */
+function treeSVG(stage, kind){
+  const lv = clamp(stage, 0, 3);
+  const palette = [
+    { leaf:"#6fb64b", leaf2:"#5aa43f", spot:"#3f7f2e" },
+    { leaf:"#78bf55", leaf2:"#62ae46", spot:"#3f7f2e" },
+    { leaf:"#84c965", leaf2:"#6cb74f", spot:"#418131" },
+    { leaf:"#95d579", leaf2:"#77c35a", spot:"#468a36" }
+  ][lv];
+  const trunk = "#8a3b2a";
+  const trunkDark = "#6f2d1f";
+  const shadow = "rgba(15,23,42,.12)";
+
+  const dotsA = [
+    [24,20],[36,20],[20,28],[32,28],[44,28],[24,36],[38,36]
+  ];
+  const dotsB = [
+    [22,22],[34,18],[42,24],[18,30],[30,32],[44,32],[28,38]
+  ];
+  const dots = kind === 2 ? dotsB : dotsA;
+  const dotR = 1.7 + lv * 0.15;
+  const trunkH = 12 + lv * 2;
+
+  if(kind === 1){
+    const w1 = 10 + lv * 2;
+    const h1 = 10 + lv * 1.2;
+    const w2 = 13 + lv * 2.2;
+    const h2 = 11 + lv * 1.3;
+    const w3 = 16 + lv * 2.4;
+    const h3 = 12 + lv * 1.4;
+    const y1 = 8 - lv * 0.3;
+    const y2 = 18;
+    const y3 = 29;
+    return `<svg viewBox="0 0 64 64" aria-hidden="true">
+      <ellipse cx="32" cy="56" rx="14" ry="4" fill="${shadow}"/>
+      <rect x="29" y="40" width="6" height="${trunkH}" rx="2.5" fill="${trunk}"/>
+      <rect x="30.2" y="42" width="3" height="${trunkH-4}" rx="1.4" fill="${trunkDark}" opacity=".5"/>
+      <polygon points="32 ${y1} ${32+w1} ${y1+h1} ${32-w1} ${y1+h1}" fill="${palette.leaf}"/>
+      <polygon points="32 ${y2} ${32+w2} ${y2+h2} ${32-w2} ${y2+h2}" fill="${palette.leaf2}" opacity=".95"/>
+      <polygon points="32 ${y3} ${32+w3} ${y3+h3} ${32-w3} ${y3+h3}" fill="${palette.leaf}"/>
+      <circle cx="36" cy="18" r="${3.2+lv*0.3}" fill="${palette.leaf2}" opacity=".4"/>
+    </svg>`;
+  }
+
+  const canopyRx = 15 + lv * 2.2;
+  const canopyRy = 13 + lv * 1.8;
+  return `<svg viewBox="0 0 64 64" aria-hidden="true">
+    <ellipse cx="32" cy="56" rx="14" ry="4" fill="${shadow}"/>
+    <rect x="29" y="36" width="6" height="${trunkH+2}" rx="2.5" fill="${trunk}"/>
+    <rect x="30.2" y="38" width="3" height="${trunkH-2}" rx="1.4" fill="${trunkDark}" opacity=".5"/>
+    <ellipse cx="32" cy="26" rx="${canopyRx}" ry="${canopyRy}" fill="${palette.leaf}"/>
+    <ellipse cx="22" cy="30" rx="${8+lv*1.2}" ry="${7+lv*1.1}" fill="${palette.leaf2}" opacity=".92"/>
+    <ellipse cx="42" cy="30" rx="${8+lv*1.2}" ry="${7+lv*1.1}" fill="${palette.leaf2}" opacity=".92"/>
+    ${dots.map(([x,y])=>`<circle cx="${x}" cy="${y}" r="${dotR}" fill="${palette.spot}" opacity=".65"/>`).join("")}
+  </svg>`;
+}
+
+function renderForest(pulse=false){
+  const grid = document.getElementById("forestGrid");
+  const cols = S.state.cols;
+  const seedlingMode = !S.state.hasListened && S.state.prosperityTotal <= 0;
+  grid.classList.toggle("seedling", seedlingMode);
+  grid.style.gridTemplateColumns = seedlingMode ? "1fr" : `repeat(${cols}, 1fr)`;
+
+  const maxCount = S.state.treeCount;
+  const perTree = 120;
+  const dynamicCount = clamp(1 + Math.floor(S.state.prosperityTotal / perTree), 1, maxCount);
+  const count = seedlingMode ? 1 : dynamicCount;
+  const prevCount = lastTreeCount || count;
+  const growNew = count > prevCount;
+  const density = maxCount ? count / maxCount : 1;
+  const gap = Math.round(clamp(14 - density * 6, 8, 14));
+  grid.style.gap = `${gap}px ${gap + 2}px`;
+  document.getElementById("treeCount").textContent = count;
+
+  const stage = clamp(Math.floor(S.state.prosperityTotal / 600), 0, 3);
+
+  if(grid.childElementCount !== count){
+    grid.innerHTML = "";
+    for(let i=0;i<count;i++){
+      const el = document.createElement("div");
+      el.className = "tree";
+      grid.appendChild(el);
+    }
+  }
+
+  for(let i=0;i<count;i++){
+    const el = grid.children[i];
+    const kind = (i + stage) % 3;
+    el.innerHTML = treeSVG(stage, kind);
+    if(growNew && i >= prevCount){
+      triggerGrow(el, (i - prevCount) * 40);
+    }else if(pulse && Math.random() < 0.12){
+      triggerGrow(el);
+    }
+  }
+  lastTreeCount = count;
+}
+
+/* ---------------- Audio: mic capture ---------------- */
+async function startMic(){
+  if(S.audio.running) return;
+  if(!navigator.mediaDevices?.getUserMedia){
+    alert("你的浏览器不支持麦克风采样（需要较新的 Chrome/Edge）。");
+    return;
+  }
+
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = ctx.createMediaStreamSource(stream);
+    const analyser = ctx.createAnalyser();
+    analyser.fftSize = 2048;
+    const data = new Float32Array(analyser.fftSize);
+
+    src.connect(analyser);
+
+    S.audio.stream = stream;
+    S.audio.ctx = ctx;
+    S.audio.analyser = analyser;
+    S.audio.data = data;
+    S.audio.running = true;
+    S.audio.lastTick = performance.now();
+
+    S.audio.permission = "granted";
+    updateSubHint();
+    document.getElementById("chipMic").textContent = "麦克风：已开启";
+    document.getElementById("btnStartStop").textContent = "停止监听";
+    document.getElementById("btnStartStop").dataset.icon = "■";
+    document.getElementById("btnStartStop").classList.remove("primary","danger","warn");
+    document.getElementById("btnStartStop").classList.add("stop");
+    logLine("MIC START：开始监听");
+
+    S.audio.tickTimer = setInterval(tick, 120);
+    UI.setBanner("已开始监听：让森林跟随课堂状态成长", "good");
+  }catch(err){
+    console.error(err);
+    if(err?.name === "NotAllowedError" || err?.name === "SecurityError"){
+      S.audio.permission = "denied";
+      updateSubHint();
+    }
+    alert("无法开启麦克风，请在浏览器中允许麦克风权限后重试。");
+    logLine("MIC ERROR：开启失败");
+  }
+}
+
+function stopMic(){
+  if(!S.audio.running) return;
+
+  clearInterval(S.audio.tickTimer);
+  S.audio.tickTimer = null;
+
+  if(S.audio.stream){
+    S.audio.stream.getTracks().forEach(t=>t.stop());
+  }
+  if(S.audio.ctx){
+    S.audio.ctx.close().catch(()=>{});
+  }
+
+  S.audio.stream = null;
+  S.audio.ctx = null;
+  S.audio.analyser = null;
+  S.audio.data = null;
+  S.audio.running = false;
+
+  document.getElementById("chipMic").textContent = "麦克风：未开启";
+  updateSubHint();
+  document.getElementById("btnStartStop").textContent = "开始监听";
+  document.getElementById("btnStartStop").dataset.icon = "▶";
+  document.getElementById("btnStartStop").classList.remove("stop","warn","danger");
+  document.getElementById("btnStartStop").classList.add("primary");
+  document.getElementById("pState").textContent = "未监听";
+  UI.setBanner("已停止监听。可投放养料，或重新开始监听。", "warn");
+  logLine("MIC STOP：停止监听");
+}
+
+function computeLevel(){
+  const analyser = S.audio.analyser;
+  const buf = S.audio.data;
+  analyser.getFloatTimeDomainData(buf);
+
+  let sum = 0;
+  for(let i=0;i<buf.length;i++){
+    const v = buf[i];
+    sum += v*v;
+  }
+  const rms = Math.sqrt(sum / buf.length);
+
+  const rms2 = rms * S.state.sensitivity;
+  const db = 20 * Math.log10(Math.max(rms2, 1e-8));
+  const level = clamp(((db + 60) / 60) * 100, 0, 100);
+
+  S.audio.rawLevel = level;
+
+  const a = S.state.smooth;
+  S.audio.level = a * S.audio.level + (1 - a) * level;
+
+  return S.audio.level;
+}
+
+/* ---------------- Growth & Feedback ---------------- */
+function tick(){
+  ensureToday();
+  cleanupExpiredPauses();
+
+  const now = performance.now();
+  const dt = (now - S.audio.lastTick) / 1000;
+  S.audio.lastTick = now;
+
+  if(!S.state.hasListened){
+    S.state.hasListened = true;
+    saveState();
+  }
+
+  const level = computeLevel();
+  const lv = clamp(level, 0, 100);
+
+  document.getElementById("levelFill").style.width = `${lv}%`;
+  document.getElementById("levelNum").textContent = round0(lv);
+  document.getElementById("statusTag").textContent = vitalityTag(lv);
+
+  S.state.listenSecondsTotal += dt;
+  S.state.sessionSeconds += dt;
+  if(S.state.mode === "read") S.state.listenSecondsRead += dt;
+  else S.state.listenSecondsQuiet += dt;
+
+  const msgLevel = S.state.messageLevel;
+  const strictFactor = msgLevel === "strict" ? 1.0 : (msgLevel === "soft" ? 0.65 : 0.85);
+
+  let isGood = false;
+  let msg = "";
+  let bannerType = "warn";
+
+  if(S.state.mode === "read"){
+    if(lv < S.state.readMin){
+      msg = "大声一点，小树林听不见！";
+      bannerType = "warn";
+    }else if(lv > S.state.readMax){
+      if(S.state.tooLoudHint){
+        msg = "声音很棒！";
+        bannerType = "warn";
+      }else{
+        msg = "声音很棒！";
+        isGood = true;
+        bannerType = "good";
+      }
+    }else{
+      msg = "很好！保持！";
+      isGood = true;
+      bannerType = "good";
+    }
+  }else{
+    if(lv <= S.state.quietMax){
+      msg = "保持安静，森林在成长！";
+      isGood = true;
+      bannerType = "good";
+    }else{
+      msg = "小声一点，森林会更快成长！";
+      bannerType = "warn";
+    }
+  }
+
+  let gain = 0;
+  if(isGood){
+    let quality = 1;
+    if(S.state.mode === "read"){
+      const mid = (S.state.readMin + S.state.readMax) / 2;
+      const dist = Math.abs(lv - mid);
+      quality = clamp(1 - dist / 40, 0.4, 1.0);
+    }else{
+      quality = clamp(1 - (lv / Math.max(S.state.quietMax, 1)) * 0.25, 0.6, 1.0);
+    }
+    gain = S.state.growthRate * quality * strictFactor * dt * 10;
+  }else{
+    gain = S.state.growthRate * 0.08 * dt * 10;
+  }
+
+  S.state.prosperityTotal += gain;
+  S.state.prosperityToday += gain;
+  S.state.sessionGain += gain;
+
+  document.getElementById("prosperity").textContent = round0(S.state.prosperityTotal);
+  document.getElementById("todayGain").textContent = round0(S.state.prosperityToday);
+
+  const mins = Math.floor(S.state.sessionSeconds / 60);
+  document.getElementById("listenTime").textContent = mins;
+
+  document.getElementById("pMode").textContent = modeName();
+  document.getElementById("pState").textContent = "监听中";
+  document.getElementById("pMsg").textContent = msg;
+  document.getElementById("pFeed").textContent = S.state.feedCount;
+
+  UI.setBanner(msg, bannerType);
+
+  const shouldPulse = isGood && Math.random() < 0.22;
+  renderForest(shouldPulse);
+
+  if(Math.random() < 0.12) saveState();
+}
+
+/* ---------------- Mode / Feed ---------------- */
+function setMode(mode){
+  S.state.mode = mode;
+  saveState();
+
+  document.getElementById("chipMode").textContent = `模式：${modeName()}`;
+  document.getElementById("pMode").textContent = modeName();
+  document.getElementById("stageTitle").innerHTML = `<span class="leaf"></span> ${modeTitle()}`;
+  updateSubHint();
+  document.getElementById("thresholdText").textContent = thresholdText();
+  logLine(`MODE：切换为${modeName()}`);
+
+  const toggleBtn = document.getElementById("btnModeToggle");
+  if(toggleBtn){
+    toggleBtn.textContent = mode === "read" ? "朗读模式" : "自习模式";
+    toggleBtn.classList.remove("warn","primary");
+    toggleBtn.classList.add(mode === "read" ? "warn" : "primary");
+  }
+}
+
+function feed(){
+  const add = 120;
+  S.state.prosperityTotal += add;
+  S.state.prosperityToday += add;
+  S.state.sessionGain += add;
+  S.state.feedCount += 1;
+
+  document.getElementById("prosperity").textContent = round0(S.state.prosperityTotal);
+  document.getElementById("todayGain").textContent = round0(S.state.prosperityToday);
+  document.getElementById("pFeed").textContent = S.state.feedCount;
+
+  UI.setBanner("已投放养料：小树林快速成长！", "good");
+  renderForest(true);
+  logLine(`FEED：投放养料 +${add}`);
+  saveState();
+}
+
+/* ---------------- Test / Calibration ---------------- */
+function renderTestMeter(lv){
+  document.getElementById("testFill").style.width = `${lv}%`;
+  document.getElementById("testNum").textContent = round0(lv);
+}
+
+async function openTest(){
+  UI.open("modalTest");
+  if(!S.audio.running){
+    await startMic();
+  }
+  if(!S.audio.running) return;
+
+  if(!S.test.meterTimer){
+    S.test.meterTimer = setInterval(()=>{
+      const lv = clamp(S.audio.level, 0, 100);
+      renderTestMeter(lv);
+    }, 100);
+  }
+  updateSuggestText();
+}
+
+function closeTest(){
+  UI.close("modalTest");
+  if(S.test.meterTimer){
+    clearInterval(S.test.meterTimer);
+    S.test.meterTimer = null;
+  }
+}
+
+function updateSuggestText(){
+  const base = S.test.baseValue;
+  if(base == null){
+    document.getElementById("baseNum").textContent = "—";
+    document.getElementById("suggestText").textContent = "请先采集背景噪声";
+    return;
+  }
+  const quietMax = clamp(Math.round(base + 5), 5, 45);
+  const readMin = clamp(Math.round(base + 18), 18, 70);
+  const readMax = clamp(Math.round(base + 45), readMin + 8, 95);
+
+  document.getElementById("baseNum").textContent = `${Math.round(base)}`;
+  document.getElementById("suggestText").textContent = `安静上限 ${quietMax} ｜ 朗读音量 ${readMin} ～ ${readMax}`;
+  S.test.suggest = { quietMax, readMin, readMax };
+}
+
+function collectBaseline(){
+  if(!S.audio.running){
+    alert("请先开启麦克风（开始监听）后再采集。");
+    return;
+  }
+  if(S.test.collecting) return;
+
+  S.test.collecting = true;
+  S.test.baseSamples = [];
+  UI.setBanner("正在采集背景噪声（10秒）…请保持当前课堂真实状态", "warn");
+  logLine("TEST：开始采集背景噪声（10秒）");
+
+  const start = performance.now();
+  const timer = setInterval(()=>{
+    S.test.baseSamples.push(clamp(S.audio.level,0,100));
+    const elapsed = (performance.now() - start) / 1000;
+    if(elapsed >= 10){
+      clearInterval(timer);
+      S.test.collecting = false;
+      const avg = S.test.baseSamples.reduce((a,b)=>a+b,0) / Math.max(1,S.test.baseSamples.length);
+      S.test.baseValue = avg;
+      updateSuggestText();
+      UI.setBanner("采集完成：已生成建议阈值，可一键应用", "good");
+      logLine(`TEST：采集完成 baseline=${Math.round(avg)}`);
+      saveState();
+    }
+  }, 120);
+}
+
+function applySuggest(){
+  if(!S.test.suggest){
+    alert("请先采集背景噪声生成建议阈值。");
+    return;
+  }
+  const {quietMax, readMin, readMax} = S.test.suggest;
+  S.state.quietMax = quietMax;
+  S.state.readMin = readMin;
+  S.state.readMax = readMax;
+  saveState();
+  renderAll();
+  UI.setBanner("已应用建议阈值：现在更贴合你的教室环境", "good");
+  logLine("TEST：应用建议阈值");
+}
+
+/* ---------------- Settings / Sens / Data ---------------- */
+function applyPanelState(){
+  const collapsed = Boolean(S.state.panelCollapsed);
+  document.body.classList.toggle("panel-collapsed", collapsed);
+  const btn = document.getElementById("btnPanelToggle");
+  if(!btn) return;
+  btn.dataset.icon = collapsed ? "»" : "«";
+  btn.textContent = collapsed ? "展开控场面板" : "收起控场面板";
+  btn.title = collapsed ? "显示控场面板" : "收起控场面板";
+  btn.setAttribute("aria-pressed", String(!collapsed));
+}
+
+function togglePanel(){
+  S.state.panelCollapsed = !S.state.panelCollapsed;
+  saveState();
+  applyPanelState();
+}
+
+function openSens(){
+  document.getElementById("sensModalRange").value = S.state.sensitivity;
+  document.getElementById("sensModalVal").textContent = round1(S.state.sensitivity);
+  UI.open("modalSens");
+}
+function openSettings(){
+  document.getElementById("setTreeCount").value = S.state.treeCount;
+  document.getElementById("setCols").value = S.state.cols;
+  document.getElementById("setSmooth").value = S.state.smooth;
+  document.getElementById("setQuietMax").value = S.state.quietMax;
+  document.getElementById("setReadMin").value = S.state.readMin;
+  document.getElementById("setReadMax").value = S.state.readMax;
+  document.getElementById("setTooLoud").value = S.state.tooLoudHint ? "on" : "off";
+  UI.open("modalSettings");
+}
+function saveSettings(){
+  const treeCount = clamp(Number(document.getElementById("setTreeCount").value||50), 20, 200);
+  const cols = clamp(Number(document.getElementById("setCols").value||12), 6, 16);
+  const smooth = clamp(Number(document.getElementById("setSmooth").value||0.82), 0.1, 0.95);
+  const quietMax = clamp(Number(document.getElementById("setQuietMax").value||22), 0, 100);
+  const readMin = clamp(Number(document.getElementById("setReadMin").value||38), 0, 100);
+  let readMax = clamp(Number(document.getElementById("setReadMax").value||70), 0, 100);
+  if(readMax < readMin + 5) readMax = Math.min(100, readMin + 5);
+  const tooLoud = document.getElementById("setTooLoud").value === "on";
+
+  S.state.treeCount = treeCount;
+  S.state.cols = cols;
+  S.state.smooth = smooth;
+  S.state.quietMax = quietMax;
+  S.state.readMin = readMin;
+  S.state.readMax = readMax;
+  S.state.tooLoudHint = tooLoud;
+
+  saveState();
+  renderAll();
+  UI.close("modalSettings");
+  UI.setBanner("设置已保存", "good");
+  logLine("SETTINGS：已保存");
+}
+
+function openData(){
+  document.getElementById("dPros").textContent = round0(S.state.prosperityTotal);
+  document.getElementById("dGain").textContent = round0(S.state.prosperityToday);
+  document.getElementById("dTime").textContent = Math.floor(S.state.listenSecondsTotal/60);
+  document.getElementById("dRead").textContent = Math.floor(S.state.listenSecondsRead/60);
+  document.getElementById("dQuiet").textContent = Math.floor(S.state.listenSecondsQuiet/60);
+  document.getElementById("dFeed").textContent = S.state.feedCount;
+  UI.open("modalData");
+}
+
+function resetSession(){
+  if(!confirm("确认重置本节课？（不清累计繁荣度与今日增长）")) return;
+  const prev = {
+    sessionGain: S.state.sessionGain,
+    sessionSeconds: S.state.sessionSeconds
+  };
+  S.state.sessionGain = 0;
+  S.state.sessionSeconds = 0;
+  saveState();
+  renderAll();
+  logLine("SESSION：重置本节课");
+  Undo.offer({
+    message: "已重置本节课",
+    onUndo: ()=>{
+      S.state.sessionGain = prev.sessionGain;
+      S.state.sessionSeconds = prev.sessionSeconds;
+      saveState();
+      renderAll();
+      logLine("UNDO：恢复本节课数据");
+      UI.setBanner("已撤销本节课重置", "good");
+    }
+  });
+}
+function resetAll(){
+  if(!confirm("确认重置森林累计？将清空所有数据。")) return;
+  const prev = structuredClone(S.state);
+  stopMic();
+  S.state = structuredClone(DEFAULT_STATE);
+  saveState();
+  ensureToday();
+  renderAll();
+  logLine("RESET：清空所有数据");
+  Undo.offer({
+    message: "已重置森林累计：可撤销",
+    onUndo: ()=>{
+      S.state = migrate(prev);
+      saveState();
+      ensureToday();
+      renderAll();
+      logLine("UNDO：恢复重置前数据");
+      UI.setBanner("已撤销重置（麦克风需重新开启）", "good");
+    }
+  });
+}
+
+function exportData(){
+  const blob = new Blob([JSON.stringify(S.state, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `全班小树林备份_${nowDate()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  logLine("DATA：导出 JSON");
+}
+
+async function importData(){
+  const f = document.getElementById("importFile").files?.[0];
+  if(!f){ alert("请选择 JSON 文件"); return; }
+  if(!confirm("导入会覆盖当前数据，确认继续？")) return;
+  const prev = structuredClone(S.state);
+  const text = await f.text();
+  try{
+    const obj = JSON.parse(text);
+    S.state = migrate(obj);
+    saveState();
+    ensureToday();
+    renderAll();
+    logLine("DATA：导入覆盖成功");
+    Undo.offer({
+      message: "导入成功：可撤销",
+      type: "good",
+      onUndo: ()=>{
+        S.state = migrate(prev);
+        saveState();
+        ensureToday();
+        renderAll();
+        logLine("UNDO：撤销导入覆盖");
+        UI.setBanner("已撤销导入覆盖", "good");
+      }
+    });
+  }catch(e){
+    console.error(e);
+    alert("导入失败：JSON 格式不正确");
+  }
+}
+
+/* ---------------- Projection / Fullscreen ---------------- */
+function toggleProjection(){
+  document.body.classList.toggle("projection");
+  const on = document.body.classList.contains("projection");
+  logLine(`PROJECTION：${on?"ON":"OFF"}`);
+  UI.setBanner(on ? "投屏模式已开启（建议点击全屏）" : "投屏模式已关闭", on ? "good" : "warn");
+}
+async function fullscreen(){
+  try{
+    const el = document.documentElement;
+    if(!document.fullscreenElement){
+      await el.requestFullscreen();
+      logLine("FULLSCREEN：进入全屏");
+    }else{
+      await document.exitFullscreen();
+      logLine("FULLSCREEN：退出全屏");
+    }
+  }catch{
+    alert("你的浏览器不支持全屏或被权限限制。");
+  }
+}
+
+/* ---------------- Render ---------------- */
+function renderTop(){
+  document.getElementById("chipMode").textContent = `模式：${modeName()}`;
+  document.getElementById("thresholdText").textContent = thresholdText();
+  document.getElementById("sensText").textContent = round1(S.state.sensitivity);
+  document.getElementById("smoothText").textContent = round1(S.state.smooth);
+
+  document.getElementById("growthRange").value = S.state.growthRate;
+  document.getElementById("sensRange").value = S.state.sensitivity;
+  document.getElementById("msgLevel").value = S.state.messageLevel;
+}
+function renderStats(){
+  document.getElementById("prosperity").textContent = round0(S.state.prosperityTotal);
+  document.getElementById("todayGain").textContent = round0(S.state.prosperityToday);
+  document.getElementById("pFeed").textContent = S.state.feedCount;
+}
+function renderSide(){
+  document.getElementById("pMode").textContent = modeName();
+  document.getElementById("pState").textContent = S.audio.running ? "监听中" : "未监听";
+}
+function renderLog(){
+  document.getElementById("logBox").textContent = (S.state.logs||[]).join("\n");
+}
+function renderAll(){
+  ensureToday();
+  applyPanelState();
+  updateSubHint();
+  renderTop();
+  renderStats();
+  renderSide();
+  renderForest(false);
+  renderLog();
+}
+
+/* ---------------- Events ---------------- */
+document.getElementById("btnModeToggle").addEventListener("click", ()=>{
+  setMode(S.state.mode === "read" ? "quiet" : "read");
+});
+
+document.getElementById("btnStartStop").addEventListener("click", ()=>{
+  if(S.audio.running) stopMic();
+  else startMic();
+});
+
+document.getElementById("btnFeed").addEventListener("click", feed);
+
+document.getElementById("btnTest").addEventListener("click", openTest);
+document.getElementById("btnCollectBase").addEventListener("click", collectBaseline);
+document.getElementById("btnApplySuggest").addEventListener("click", applySuggest);
+document.getElementById("btnCloseTest").addEventListener("click", closeTest);
+document.getElementById("btnCloseTest2").addEventListener("click", closeTest);
+
+document.getElementById("btnSens").addEventListener("click", ()=>{
+  document.getElementById("sensModalRange").value = S.state.sensitivity;
+  document.getElementById("sensModalVal").textContent = round1(S.state.sensitivity);
+  UI.open("modalSens");
+});
+document.getElementById("sensModalRange").addEventListener("input", (e)=>{
+  S.state.sensitivity = clamp(Number(e.target.value), 0.5, 2.5);
+  document.getElementById("sensModalVal").textContent = round1(S.state.sensitivity);
+  document.getElementById("sensRange").value = S.state.sensitivity;
+  renderTop();
+  saveState();
+});
+document.getElementById("sensRange").addEventListener("input", (e)=>{
+  S.state.sensitivity = clamp(Number(e.target.value), 0.5, 2.5);
+  document.getElementById("sensModalRange").value = S.state.sensitivity;
+  document.getElementById("sensModalVal").textContent = round1(S.state.sensitivity);
+  renderTop();
+  saveState();
+});
+
+document.getElementById("growthRange").addEventListener("input", (e)=>{
+  S.state.growthRate = clamp(Number(e.target.value), 0.2, 3);
+  saveState();
+});
+
+document.getElementById("msgLevel").addEventListener("change", (e)=>{
+  S.state.messageLevel = e.target.value;
+  saveState();
+  logLine(`MESSAGE：提示强度=${S.state.messageLevel}`);
+});
+
+document.getElementById("btnSettings").addEventListener("click", openSettings);
+document.getElementById("btnSaveSettings").addEventListener("click", saveSettings);
+document.getElementById("btnPanelToggle").addEventListener("click", togglePanel);
+
+document.getElementById("btnData").addEventListener("click", openData);
+document.getElementById("btnExport").addEventListener("click", exportData);
+document.getElementById("btnImport").addEventListener("click", importData);
+document.getElementById("btnResetSession2").addEventListener("click", resetSession);
+document.getElementById("btnResetAll2").addEventListener("click", resetAll);
+
+document.getElementById("btnSessionReset").addEventListener("click", resetSession);
+document.getElementById("btnAllReset").addEventListener("click", resetAll);
+
+document.getElementById("btnProjection").addEventListener("click", toggleProjection);
+document.getElementById("btnFullscreen").addEventListener("click", fullscreen);
+
+/* backdrop click close */
+["modalTest","modalSens","modalSettings","modalData"].forEach(id=>{
+  const el = document.getElementById(id);
+  el.addEventListener("click",(ev)=>{
+    if(ev.target===el){
+      if(id==="modalTest") closeTest();
+      else UI.close(id);
+    }
+  });
+});
+
+/* init */
+ensureToday();
+setMode(S.state.mode);
+renderAll();
+initMicPermission();
+UI.setBanner("点击「开始监听」，让森林跟随课堂状态成长。", "warn");
+logLine("INIT：页面加载完成");
+</script>
+</body>
+</html>
