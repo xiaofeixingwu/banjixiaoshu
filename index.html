@@ -596,6 +596,42 @@
       white-space:pre-wrap;
     }
 
+    /* Fertilizer manage */
+    .fert-list{display:flex; flex-direction:column; gap:10px; margin-top:10px;}
+    .fert-item{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      border:1px solid rgba(15,23,42,.10);
+      border-radius:12px;
+      padding:10px 12px;
+      background:#fff;
+      box-shadow:0 10px 16px rgba(0,0,0,.05);
+    }
+    .fert-left{min-width:0;}
+    .fert-name{font-weight:1000;}
+    .fert-desc{color:var(--muted); font-weight:850; font-size:12px; margin-top:2px;}
+    .fert-right{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+    .fert-input{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      font-size:12px;
+      font-weight:900;
+      color:#111827;
+    }
+    .fert-input input{
+      width:84px;
+      padding:6px 8px;
+      border-radius:10px;
+      border:1px solid rgba(15,23,42,.18);
+      font-weight:900;
+    }
+    .fert-actions{display:flex; gap:8px; flex-wrap:wrap;}
+    .fert-add{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
+    .fert-add input[type="text"]{min-width:200px;}
+
     /* Projection mode */
     body.panel-collapsed .wrap{grid-template-columns:1fr}
     body.panel-collapsed .side{display:none}
@@ -941,12 +977,42 @@
     </div>
   </div>
 
+  <!-- Modal: Fertilizer manage -->
+  <div class="backdrop" id="modalFertManage">
+    <div class="modal">
+      <div class="modal-header">
+        <h4>养料管理</h4>
+        <button class="btn" onclick="UI.close('modalFertManage')" data-icon="✕">关闭</button>
+      </div>
+      <div class="modal-body">
+        <div class="card" style="margin:0">
+          <div class="sub"><b>可用养料</b></div>
+          <div class="fert-list" id="fertManageList"></div>
+          <div class="divider"></div>
+          <div class="sub"><b>添加新养料</b></div>
+          <div class="fert-add">
+            <input id="fertNameInput" type="text" placeholder="养料名称，例如：纯净水"/>
+            <input id="fertAmountInput" type="number" min="1" step="1" value="50"/>
+            <button class="btn primary" id="btnAddFert" data-icon="＋">添加养料</button>
+          </div>
+          <div class="hint" style="margin-top:6px">可随时添加新养料。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
 /** =========================================================
  *  全班共育小树林（课堂声音驱动）
  * ========================================================= */
 
 const STORE_KEY = "class_forest_group_v2_students";
+const DEFAULT_FERTILIZERS = [
+  { id:"water", name:"纯净水", add: 30 },
+  { id:"organic", name:"有机肥", add: 80 },
+  { id:"sun", name:"暖暖阳光", add: 50 },
+  { id:"energy", name:"森林能量", add: 120 }
+];
 
 const DEFAULT_STATE = {
   today: null,
@@ -983,6 +1049,7 @@ const DEFAULT_STATE = {
   sessionSeconds: 0,
   hasListened: false,
   panelCollapsed: true,
+  fertilizers: DEFAULT_FERTILIZERS.map(f=>({ ...f })),
 
   // log
   logs: []
@@ -1139,6 +1206,15 @@ function migrate(obj){
   st.messageLevel = st.messageLevel || "normal";
   st.hasListened = Boolean(st.hasListened);
   st.panelCollapsed = Boolean(st.panelCollapsed);
+  if(!Array.isArray(st.fertilizers) || st.fertilizers.length === 0){
+    st.fertilizers = DEFAULT_FERTILIZERS.map(f=>({ ...f }));
+  }else{
+    st.fertilizers = st.fertilizers.map(f=>({
+      id: String(f.id || uid()),
+      name: String(f.name || "未命名").trim() || "未命名",
+      add: Math.max(1, Math.round(Number(f.add) || 1))
+    }));
+  }
   delete st.students;
   delete st.studentsAuto;
   delete st.studentFactor;
@@ -1314,6 +1390,129 @@ function renderForest(pulse=false){
     }
   }
   lastTreeCount = count;
+}
+
+/* ---------------- Fertilizer ---------------- */
+function renderFertilizers(){
+  const list = document.getElementById("fertManageList");
+  if(!list) return;
+  list.innerHTML = "";
+  const items = Array.isArray(S.state.fertilizers) ? S.state.fertilizers : [];
+
+  if(items.length === 0){
+    const empty = document.createElement("div");
+    empty.className = "hint";
+    empty.textContent = "暂无养料，请在下方添加。";
+    list.appendChild(empty);
+    return;
+  }
+
+  for(const item of items){
+    const row = document.createElement("div");
+    row.className = "fert-item";
+
+    const left = document.createElement("div");
+    left.className = "fert-left";
+    const name = document.createElement("div");
+    name.className = "fert-name";
+    name.textContent = item.name;
+    const desc = document.createElement("div");
+    desc.className = "fert-desc";
+    desc.textContent = `本次增长 +${item.add}`;
+    left.appendChild(name);
+    left.appendChild(desc);
+
+    const right = document.createElement("div");
+    right.className = "fert-right";
+    const inputWrap = document.createElement("label");
+    inputWrap.className = "fert-input";
+    const label = document.createElement("span");
+    label.textContent = "本次添加";
+    const input = document.createElement("input");
+    input.type = "number";
+    input.min = "1";
+    input.step = "1";
+    input.value = item.add;
+    input.addEventListener("change", ()=>{
+      updateFertilizerAmount(item.id, input.value);
+    });
+    inputWrap.appendChild(label);
+    inputWrap.appendChild(input);
+
+    const actions = document.createElement("div");
+    actions.className = "fert-actions";
+    const btnUse = document.createElement("button");
+    btnUse.className = "btn tiny primary";
+    btnUse.dataset.icon = "＋";
+    btnUse.textContent = "使用";
+    btnUse.onclick = ()=>applyFertilizerItem(item.id);
+
+    const btnDel = document.createElement("button");
+    btnDel.className = "btn tiny";
+    btnDel.dataset.icon = "✕";
+    btnDel.textContent = "删除";
+    btnDel.onclick = ()=>removeFertilizer(item.id);
+
+    actions.appendChild(btnUse);
+    actions.appendChild(btnDel);
+
+    right.appendChild(inputWrap);
+    right.appendChild(actions);
+
+    row.appendChild(left);
+    row.appendChild(right);
+    list.appendChild(row);
+  }
+}
+
+function openFertilizerModal(){
+  renderFertilizers();
+  UI.open("modalFertManage");
+  const nameInput = document.getElementById("fertNameInput");
+  if(nameInput) nameInput.focus();
+}
+
+function updateFertilizerAmount(id, value){
+  const item = S.state.fertilizers.find(f=>f.id===id);
+  if(!item) return;
+  const v = Math.max(1, Math.round(Number(value) || 1));
+  item.add = v;
+  saveState();
+  renderFertilizers();
+}
+
+function addFertilizer(){
+  const nameInput = document.getElementById("fertNameInput");
+  const amountInput = document.getElementById("fertAmountInput");
+  const name = String(nameInput?.value || "").trim();
+  const add = Math.max(1, Math.round(Number(amountInput?.value) || 1));
+  if(!name){
+    alert("请输入养料名称");
+    return;
+  }
+  S.state.fertilizers.push({ id: uid(), name, add });
+  saveState();
+  renderFertilizers();
+  if(nameInput) nameInput.value = "";
+  if(amountInput) amountInput.value = "50";
+  UI.setBanner(`已添加养料：${name}`, "good");
+  logLine(`FERT：添加 ${name} +${add}`);
+}
+
+function removeFertilizer(id){
+  const item = S.state.fertilizers.find(f=>f.id===id);
+  if(!item) return;
+  if(!confirm(`确认删除养料「${item.name}」？`)) return;
+  S.state.fertilizers = S.state.fertilizers.filter(f=>f.id!==id);
+  saveState();
+  renderFertilizers();
+  logLine(`FERT：删除 ${item.name}`);
+}
+
+function applyFertilizerItem(id){
+  const item = S.state.fertilizers.find(f=>f.id===id);
+  if(!item) return;
+  applyFertilizer(item.add, item.name);
 }
 
 /* ---------------- Audio: mic capture ---------------- */
@@ -1537,20 +1736,24 @@ function setMode(mode){
   }
 }
 
-function feed(){
-  const add = 120;
-  S.state.prosperityTotal += add;
-  S.state.prosperityToday += add;
-  S.state.sessionGain += add;
+function applyFertilizer(add, label="投放养料"){
+  const val = Math.max(1, Math.round(Number(add) || 0));
+  if(!val){
+    alert("请输入有效的养料数值");
+    return;
+  }
+  S.state.prosperityTotal += val;
+  S.state.prosperityToday += val;
+  S.state.sessionGain += val;
   S.state.feedCount += 1;
 
   document.getElementById("prosperity").textContent = round0(S.state.prosperityTotal);
   document.getElementById("todayGain").textContent = round0(S.state.prosperityToday);
   document.getElementById("pFeed").textContent = S.state.feedCount;
 
-  UI.setBanner("已投放养料：小树林快速成长！", "good");
+  UI.setBanner(`已投放养料：${label} +${val}`, "good");
   renderForest(true);
-  logLine(`FEED：投放养料 +${add}`);
+  logLine(`FEED：${label} +${val}`);
   saveState();
 }
 
@@ -1852,6 +2055,7 @@ function renderAll(){
   renderStats();
   renderSide();
   renderForest(false);
+  renderFertilizers();
   renderLog();
 }
 
@@ -1865,7 +2069,7 @@ document.getElementById("btnStartStop").addEventListener("click", ()=>{
   else startMic();
 });
 
-document.getElementById("btnFeed").addEventListener("click", feed);
+document.getElementById("btnFeed").addEventListener("click", openFertilizerModal);
 
 document.getElementById("btnTest").addEventListener("click", openTest);
 document.getElementById("btnCollectBase").addEventListener("click", collectBaseline);
@@ -1907,6 +2111,7 @@ document.getElementById("msgLevel").addEventListener("change", (e)=>{
 document.getElementById("btnSettings").addEventListener("click", openSettings);
 document.getElementById("btnSaveSettings").addEventListener("click", saveSettings);
 document.getElementById("btnPanelToggle").addEventListener("click", togglePanel);
+document.getElementById("btnAddFert").addEventListener("click", addFertilizer);
 
 document.getElementById("btnData").addEventListener("click", openData);
 document.getElementById("btnExport").addEventListener("click", exportData);
@@ -1921,7 +2126,7 @@ document.getElementById("btnProjection").addEventListener("click", toggleProject
 document.getElementById("btnFullscreen").addEventListener("click", fullscreen);
 
 /* backdrop click close */
-["modalTest","modalSens","modalSettings","modalData"].forEach(id=>{
+["modalTest","modalSens","modalSettings","modalData","modalFertManage"].forEach(id=>{
   const el = document.getElementById(id);
   el.addEventListener("click",(ev)=>{
     if(ev.target===el){
